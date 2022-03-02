@@ -15,7 +15,8 @@ public class Panel extends JPanel {
     Panel() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         raster = new ImageBuffer(WIDTH, HEIGHT);
-        raster.setClearValue(new Col(Color.BLACK.getRGB()));
+        raster.setClearValue(new Col(Color.RED.getRGB()));
+        raster.clear();
     }
 
     @Override

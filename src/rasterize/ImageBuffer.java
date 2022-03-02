@@ -35,6 +35,7 @@ public class ImageBuffer implements Raster<Col> {
 
     @Override
     public void clear() {
+        // různé zavolání getGraphics() vrací různé reference
         Graphics g = getGraphics();
         g.setColor(new Color(clearColor.getRGB()));
         g.fillRect(0, 0, img.getWidth(), img.getHeight());
