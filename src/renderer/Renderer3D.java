@@ -122,8 +122,8 @@ public class Renderer3D implements GPURenderer {
 //
 //        imageBuffer.setElement((int) (v1.getX() * 10), (int) (v1.getY() * 10), v1.getColor());
 
-        // setřídit podle Y
-        // V1y <= V2y <= V3y
+        // setřídit podle Y (slide 129)
+        // cílem je V1y <= V2y <= V3y
         if (v1.getY() > v2.getY()) { // aby ve V2 bylo větší Y než ve V1
             Vertex temp = v1;
             v1 = v2;
@@ -141,10 +141,12 @@ public class Renderer3D implements GPURenderer {
         }
 
         // A => B
+        // slide 129
+        // interpolace podle Y
 //        long startAB = 0;
 //        if (v1.getY() > 0) startAB = v1.getY();
-        long startAB = Math.round(Math.max(0, Math.ceil(v1.getY())));
-        long endAB = Math.round(Math.min(v2.getY(), imageBuffer.getHeight()) - 1);
+        long startAB = (long) Math.max(Math.ceil(v1.getY()), 0);
+        double endAB = Math.min(v2.getY(), imageBuffer.getHeight() - 1);
         for (long y = startAB; y <= endAB; y++) {
             double s12 = (y - v1.getY()) / (v2.getY() - v1.getY());
             Vertex v12 = v1.mul(1 - s12).add(v2.mul(s12));
@@ -166,8 +168,8 @@ public class Renderer3D implements GPURenderer {
             b = temp;
         }
 
-        long start = Math.round(Math.max(0, a.getX()));
-        long end = Math.round(Math.min(b.getX(), imageBuffer.getWidth()) - 1);
+        long start = (long) Math.max(Math.ceil(a.getX()), 0);
+        double end = Math.min(b.getX(), imageBuffer.getWidth() - 1);
         for (long x = start; x <= end; x++) {
             double s = (x - a.getX()) / (b.getX() - a.getX());
             Vertex finalVertex = a.mul(1 - s).add(b.mul(s));
