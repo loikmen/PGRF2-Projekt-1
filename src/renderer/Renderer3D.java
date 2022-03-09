@@ -3,16 +3,26 @@ package renderer;
 import model.Part;
 import model.TopologyType;
 import model.Vertex;
-import transforms.Mat4;
-import transforms.Mat4Identity;
+import rasterize.DepthBuffer;
+import rasterize.ImageBuffer;
+import transforms.*;
 
 import java.util.List;
+import java.util.Optional;
 
 public class Renderer3D implements GPURenderer {
+
+    private final ImageBuffer imageBuffer;
+    private final DepthBuffer depthBuffer;
 
     private Mat4 model = new Mat4Identity();
     private Mat4 view = new Mat4Identity();
     private Mat4 projection = new Mat4Identity();
+
+    public Renderer3D(ImageBuffer imageBuffer) {
+        this.imageBuffer = imageBuffer;
+        depthBuffer = new DepthBuffer(imageBuffer.getWidth(), imageBuffer.getHeight());
+    }
 
     @Override
     public void draw(List<Part> partsBuffer, List<Integer> indexBuffer, List<Vertex> vertexBuffer) {
@@ -95,12 +105,90 @@ public class Renderer3D implements GPURenderer {
     }
 
     private void drawTriangle(Vertex a, Vertex b, Vertex c) {
+        Optional<Vec3D> o1 = a.getPoint().dehomog();
 
+        if (o1.isEmpty()) return;
+
+        Vertex v1 = new Vertex(new Point3D(o1.get()), a.getColor());
+        Vertex v2 = b; // TODO
+        Vertex v3 = c; // TODO
+
+        // TODO transformace do okna
+        // new Vec3D(v1.getPoint());
+
+//        System.out.println(v1.getX());
+//        System.out.println(v2.getX());
+//        System.out.println(v3.getX());
+//
+//        imageBuffer.setElement((int) (v1.getX() * 10), (int) (v1.getY() * 10), v1.getColor());
+
+        // setřídit podle Y
+        // V1y <= V2y <= V3y
+        if (v1.getY() > v2.getY()) { // aby ve V2 bylo větší Y než ve V1
+            Vertex temp = v1;
+            v1 = v2;
+            v2 = temp;
+        }
+        if (v2.getY() > v3.getY()) { // aby ve V3 bylo největší Y
+            Vertex temp = v2;
+            v2 = v3;
+            v3 = temp;
+        }
+        if (v1.getY() > v2.getY()) { // aby ve V1 bylo nejmenší Y
+            Vertex temp = v1;
+            v1 = v2;
+            v2 = temp;
+        }
+
+        // A => B
+//        long startAB = 0;
+//        if (v1.getY() > 0) startAB = v1.getY();
+        long startAB = Math.round(Math.max(0, Math.ceil(v1.getY())));
+        long endAB = Math.round(Math.min(v2.getY(), imageBuffer.getHeight()) - 1);
+        for (long y = startAB; y <= endAB; y++) {
+            double s12 = (y - v1.getY()) / (v2.getY() - v1.getY());
+            Vertex v12 = v1.mul(1 - s12).add(v2.mul(s12));
+
+            double s13 = (y - v1.getY()) / (v3.getY() - v1.getY());
+            Vertex v13 = v1.mul(1 - s13).add(v3.mul(s13));
+
+            fillLine(y, v12, v13);
+        }
+
+        // B => C
+        // TODO
+    }
+
+    private void fillLine(long y, Vertex a, Vertex b) {
+        if (a.getX() > b.getX()) {
+            Vertex temp = a;
+            a = b;
+            b = temp;
+        }
+
+        long start = Math.round(Math.max(0, a.getX()));
+        long end = Math.round(Math.min(b.getX(), imageBuffer.getWidth()) - 1);
+        for (long x = start; x <= end; x++) {
+            double s = (x - a.getX()) / (b.getX() - a.getX());
+            Vertex finalVertex = a.mul(1 - s).add(b.mul(s));
+            drawPixel((int) x, (int) y, finalVertex.getZ(), finalVertex.getColor());
+        }
+    }
+
+    private void drawPixel(int x, int y, double z, Col color) {
+        Optional<Double> depthBufferElement = depthBuffer.getElement(x, y);
+        if (depthBufferElement.isEmpty()) return;
+
+        if (z < depthBufferElement.get()) {
+            imageBuffer.setElement(x, y, color);
+            depthBuffer.setElement(x, y, z);
+        }
     }
 
     @Override
     public void clear() {
-
+        imageBuffer.clear();
+        depthBuffer.clear();
     }
 
     @Override

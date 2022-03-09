@@ -30,7 +30,7 @@ public class ImageBuffer implements Raster<Col> {
 
     @Override
     public void setElement(int x, int y, Col value) {
-        // TODO
+        img.setRGB(x, y, value.getRGB());
     }
 
     @Override
