@@ -30,8 +30,8 @@ public class Controller3D {
         indexBuffer = List.of(0, 1, 2);
         vertexBuffer = List.of(
                 new Vertex(new Point3D(0.2, 0.2, 0.2), new Col(Color.WHITE.getRGB())),
-                new Vertex(new Point3D(0.5, 0.5, 0.5), new Col(Color.YELLOW.getRGB())),
-                new Vertex(new Point3D(0.7, 0.7, 0.7), new Col(Color.GREEN.getRGB()))
+                new Vertex(new Point3D(0.6, 0.5, 0.5), new Col(Color.YELLOW.getRGB())),
+                new Vertex(new Point3D(0.7, 0.3, 0.7), new Col(Color.GREEN.getRGB()))
         );
         display();
     }
