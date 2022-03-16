@@ -5,6 +5,7 @@ import model.TopologyType;
 import model.Vertex;
 import rasterize.DepthBuffer;
 import rasterize.ImageBuffer;
+import shader.Shader;
 import transforms.*;
 
 import java.util.List;
@@ -18,10 +19,23 @@ public class Renderer3D implements GPURenderer {
     private Mat4 model = new Mat4Identity();
     private Mat4 view = new Mat4Identity();
     private Mat4 projection = new Mat4Identity();
+    private Shader<Vertex, Col> shader;
 
     public Renderer3D(ImageBuffer imageBuffer) {
         this.imageBuffer = imageBuffer;
         depthBuffer = new DepthBuffer(imageBuffer.getWidth(), imageBuffer.getHeight());
+
+//        shader = new Shader<Vertex, Col>() {
+//            @Override
+//            public Col shade(Vertex vertex) {
+//                return vertex.getColor();
+//            }
+//        };
+//        shader = vertex -> {
+//            return vertex.getColor();
+//        };
+//        shader = vertex -> vertex.getColor();
+        shader = Vertex::getColor;
     }
 
     @Override
@@ -173,7 +187,8 @@ public class Renderer3D implements GPURenderer {
         for (long x = start; x <= end; x++) {
             double s = (x - a.getX()) / (b.getX() - a.getX());
             Vertex finalVertex = a.mul(1 - s).add(b.mul(s));
-            drawPixel((int) x, (int) y, finalVertex.getZ(), finalVertex.getColor());
+            Col finalColor = shader.shade(finalVertex);
+            drawPixel((int) x, (int) y, finalVertex.getZ(), finalColor);
         }
     }
 
@@ -206,5 +221,10 @@ public class Renderer3D implements GPURenderer {
     @Override
     public void setProjection(Mat4 projection) {
 
+    }
+
+    @Override
+    public void setShader(Shader<Vertex, Col> shader) {
+        this.shader = shader;
     }
 }

@@ -33,6 +33,8 @@ public class Vertex {
         );
     }
 
+    // TODO? dehomog()
+
     public Point3D getPoint() {
         return point;
     }

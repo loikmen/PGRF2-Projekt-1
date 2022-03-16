@@ -20,7 +20,7 @@ cvičení středa 14:05-15:35
 
 * Týden 1-6: řešení viditelnosti ve 3D scéně (Z-buffer)
 * Týden 6-12: řešené úlohy OpenGL, konzultace semestrálního projektu
-* Týden 7: zadání semestrálního projektu
-* Týden 10-11: prezentace projektu – bude termín ve stagu
+* Týden 7: zadání témat semestrálního projektu
+* Týden 11: prezentace projektu ~~– bude termín ve stagu~~
 * Týden 12: druhý test a druhý projekt
 * Týden 13: zpětná vazba a opravný test
