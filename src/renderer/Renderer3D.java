@@ -8,6 +8,7 @@ import rasterize.ImageBuffer;
 import shader.Shader;
 import transforms.*;
 
+import java.awt.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,14 +69,24 @@ public class Renderer3D implements GPURenderer {
                 v1.getColor()
         );
         // TODO transformovat ostatní vrcholy
-        Vertex b = v2;
-        Vertex c = v3;
+        Vertex b = new Vertex(
+                v2.getPoint().mul(model).mul(view).mul(projection),
+                v2.getColor()
+        );
+        Vertex c = new Vertex(
+                v3.getPoint().mul(model).mul(view).mul(projection),
+                v3.getColor()
+        );
 
         // 2. ořezání
         // ořezat ty trojúhelníky, které jsou celé mimo zobrazovací objem
         if (a.getX() > a.getW() && b.getX() > b.getW() && c.getX() > c.getW()) return;
+        if (a.getY() > a.getW() && b.getY() > b.getW() && c.getY() > c.getW()) return;
+        if (a.getZ() > a.getW() && b.getZ() > b.getW() && c.getZ() > c.getW()) return;
         // return protože celý trojúhelník je moc vlevo mimo zobrazovací objem
         if (a.getX() < -a.getW() && b.getX() < -b.getW() && c.getX() < -c.getW()) return;
+        if (a.getY() < -a.getW() && b.getY() < -b.getW() && c.getY() < -c.getW()) return;
+        if (a.getZ() < 0 && b.getZ() < 0 && c.getZ() < 0) return;
         // TODO dodělat pro Y a Z
 
         // 3. seřazení podle Z (a.z ≥ b.z ≥ c.z)
@@ -113,6 +124,7 @@ public class Renderer3D implements GPURenderer {
             drawTriangle(a, ab, ac);
         } else if (c.getZ() < 0) {
             // TODO
+            drawTriangle(a, b, c);
         } else {
             drawTriangle(a, b, c);
         }
@@ -120,21 +132,47 @@ public class Renderer3D implements GPURenderer {
 
     private void drawTriangle(Vertex a, Vertex b, Vertex c) {
         Optional<Vec3D> o1 = a.getPoint().dehomog();
+        Optional<Vec3D> o2 = b.getPoint().dehomog();
+        Optional<Vec3D> o3 = c.getPoint().dehomog();
 
         if (o1.isEmpty()) return;
 
         Vertex v1 = new Vertex(new Point3D(o1.get()), a.getColor());
-        Vertex v2 = b; // TODO
-        Vertex v3 = c; // TODO
+        Vertex v2 = new Vertex(new Point3D(o2.get()), b.getColor()); // TODO
+        Vertex v3 = new Vertex(new Point3D(o3.get()), c.getColor()); // TODO
 
         // TODO transformace do okna
+
+
+
         // new Vec3D(v1.getPoint());
 
-//        System.out.println(v1.getX());
+//       System.out.println(v3.getX());
+//        System.out.println(v3.getY());
 //        System.out.println(v2.getX());
+//        System.out.println(v2.getY());
+
 //        System.out.println(v3.getX());
+
+
 //
-//        imageBuffer.setElement((int) (v1.getX() * 10), (int) (v1.getY() * 10), v1.getColor());
+        imageBuffer.setElement((int) (v1.getX() * 800), (int) (v1.getY() * 600), v1.getColor());
+        imageBuffer.setElement((int) (v2.getX() * 800), (int) (v2.getY() * 600), v2.getColor());
+        imageBuffer.setElement((int) (v3.getX() * 800), (int) (v3.getY() * 600), v3.getColor());
+
+int xd = (int) (v1.getX()*800);
+
+        Graphics g = imageBuffer.getGraphics();
+        g.setColor(new Color(1000));
+      //  g.drawLine((int) v1.getX()*800, (int) v1.getY()*600, (int) v2.getX()*800, (int) v2.getY()*600);
+        g.drawLine((int) v3.getX()*800,  (int) v3.getY()*600, (int) (v2.getX()*800), (int)(v2.getY()*600));
+        g.drawLine((int) v2.getX()*800,  (int) v2.getY()*600, (int) (v1.getX()*800), (int)(v1.getY()*600));
+        g.drawLine((int) v1.getX()*800,  (int) v1.getY()*600, (int) (v3.getX()*800), (int)(v3.getY()*600));
+
+       // g.drawLine((int) a.getX(), (int) vecA.getY(), (int) vecC.getX(), (int) vecC.getY());
+      //  g.drawLine((int) vecC.getX(), (int) vecC.getY(), (int) vecB.getX(), (int) vecB.getY());
+
+
 
         // setřídit podle Y (slide 129)
         // cílem je V1y <= V2y <= V3y
@@ -161,6 +199,14 @@ public class Renderer3D implements GPURenderer {
 //        if (v1.getY() > 0) startAB = v1.getY();
         long startAB = (long) Math.max(Math.ceil(v1.getY()), 0);
         double endAB = Math.min(v2.getY(), imageBuffer.getHeight() - 1);
+
+
+        if(startAB>endAB){
+            long temp2 = startAB;
+            startAB = (long) endAB;
+            endAB = temp2;
+        }
+
         for (long y = startAB; y <= endAB; y++) {
             double s12 = (y - v1.getY()) / (v2.getY() - v1.getY());
             Vertex v12 = v1.mul(1 - s12).add(v2.mul(s12));
@@ -192,7 +238,7 @@ public class Renderer3D implements GPURenderer {
         }
     }
 
-    private void drawPixel(int x, int y, double z, Col color) {
+    public void drawPixel(int x, int y, double z, Col color) {
         Optional<Double> depthBufferElement = depthBuffer.getElement(x, y);
         if (depthBufferElement.isEmpty()) return;
 

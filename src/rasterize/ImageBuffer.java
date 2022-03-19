@@ -25,7 +25,14 @@ public class ImageBuffer implements Raster<Col> {
 
     @Override
     public Optional<Col> getElement(int x, int y) {
-        return Optional.empty(); // TODO
+
+        return Optional.of(new Col(img.getRGB(x,y)));
+
+
+        // TODO
+
+       // return img.getRGB(x,y);
+
     }
 
     @Override
@@ -48,12 +55,16 @@ public class ImageBuffer implements Raster<Col> {
 
     @Override
     public int getWidth() {
-        return 0; // TODO
+       //return 0;
+        // TODO
+        return img.getWidth();
     }
 
     @Override
     public int getHeight() {
-        return 0; // TODO
+       // return 0;
+        // TODO
+        return img.getHeight();
     }
 
 }
