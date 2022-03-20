@@ -59,6 +59,8 @@ public class Controller3D {
                     Mat4 velikost = new Mat4Scale(1.2, 1.2, 1.2);
                     model = model.mul(velikost);
 
+
+
                  //   System.out.println(model);
                     renderer.setModel(model);
 
@@ -357,7 +359,6 @@ public class Controller3D {
                     renderer.draw(partBuffer,indexBuffer,vertexBuffer);
 
 
-
             }
 
             @Override
@@ -392,18 +393,49 @@ public class Controller3D {
             }
         });
 
+        //změna projekce
+        panel.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent c) {
+
+
+                if (c.getKeyCode() == KeyEvent.VK_ENTER) {
+
+                    changeMode();
+                    if (mode == 0) {
+                        raster.clear();
+                        renderer.setView(camera.getViewMatrix());
+                        renderer.setProjection(projection);
+                        renderer.draw(partBuffer,indexBuffer,vertexBuffer);
+
+                    } else {
+                        raster.clear();
+                        renderer.setView(camera.getViewMatrix());
+                        renderer.setProjection(projectionOrtho);
+                        renderer.draw(partBuffer,indexBuffer,vertexBuffer);
+
+                    }
+
+                }
+
+
+            }
+
+        });
+
         partBuffer = List.of(new Part(TopologyType.TRIANGLE, 0, 1));
         indexBuffer = List.of(0, 1, 2);
         vertexBuffer = List.of(
-                new Vertex(new Point3D(0.2, 0.2, 0.2), new Col(Color.WHITE.getRGB())),
-                new Vertex(new Point3D(0.6, 0.5, 0.5), new Col(Color.YELLOW.getRGB())),
-                new Vertex(new Point3D(0.7, 0.3, 0.7), new Col(Color.WHITE.getRGB()))
+
+                new Vertex(new Point3D(0.2, 0.2, 0.2), new Col(Color.orange.getRGB())),
+                new Vertex(new Point3D(0.6, 0.5, 0.5), new Col(Color.red.getRGB())),
+                new Vertex(new Point3D(0.7, 0.3, 0.7), new Col(Color.pink.getRGB()))
         );
 
         Shader<Vertex, Col> shader = Vertex::getColor;
         renderer.setShader(shader);
 
-        Shader<Vertex, Col> shaderCyan = vertex -> new Col(Color.CYAN.getRGB());
+        Shader<Vertex, Col> shaderCyan = vertex -> new Col(Color.red.getRGB());
         renderer.setShader(shaderCyan);
 
         Shader<Vertex, Col> shaderNoGreen = vertex -> {
@@ -435,7 +467,7 @@ public class Controller3D {
 
         display();
 
-        Camera camera = new Camera();
+       // Camera camera = new Camera();
         camera = camera.right(-5);
         System.out.println(camera.getPosition());
 
@@ -451,6 +483,16 @@ public class Controller3D {
 
     }
 
+    //metoda změny modu projekce
+    private void changeMode() {
+        if (mode == 0) {
+            mode = 1;
+        } else {
+            mode = 0;
+        }
+    }
+
+
 
 
     private void display() {
@@ -462,6 +504,17 @@ public class Controller3D {
 
 
         panel.repaint();
+
+
+
+
+        renderer.setView(camera.getViewMatrix());
+        renderer.setProjection(projection);
+
+
+
+        renderer.setModel(new Mat4Identity());
+
     }
 
     private void initListeners() {

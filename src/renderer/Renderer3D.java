@@ -8,7 +8,6 @@ import rasterize.ImageBuffer;
 import shader.Shader;
 import transforms.*;
 
-import java.awt.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -141,7 +140,24 @@ public class Renderer3D implements GPURenderer {
         Vertex v2 = new Vertex(new Point3D(o2.get()), b.getColor()); // TODO
         Vertex v3 = new Vertex(new Point3D(o3.get()), c.getColor()); // TODO
 
+       Vec3D vector1 = new Vec3D(v1.getPoint());
+        Vec3D vector2 = new Vec3D(v2.getPoint());
+        Vec3D vector3 = new Vec3D(v3.getPoint());
+
         // TODO transformace do okna
+
+        vector1 = vector1.mul(new Vec3D(1.0, -1.0, 1.0)).add(new Vec3D(1.0, 1.0, 0.0))
+                .mul(new Vec3D((imageBuffer.getWidth() - 1) / 2, (imageBuffer.getHeight() - 1) / 2, 1.0));
+
+        vector2 = vector2.mul(new Vec3D(1.0, -1.0, 1.0)).add(new Vec3D(1.0, 1.0, 0.0))
+                .mul(new Vec3D((imageBuffer.getWidth() - 1) / 2, (imageBuffer.getHeight() - 1) / 2, 1.0));
+
+        vector3 = vector3.mul(new Vec3D(1.0, -1.0, 1.0)).add(new Vec3D(1.0, 1.0, 0.0))
+                .mul(new Vec3D((imageBuffer.getWidth() - 1) / 2, (imageBuffer.getHeight() - 1) / 2, 1.0));
+
+        v1 = new Vertex(new Point3D(vector1),v1.getColor());
+        v2 = new Vertex(new Point3D(vector2),v2.getColor());
+        v3 = new Vertex(new Point3D(vector3),v3.getColor());
 
 
 
@@ -156,18 +172,18 @@ public class Renderer3D implements GPURenderer {
 
 
 //
-        imageBuffer.setElement((int) (v1.getX() * 800), (int) (v1.getY() * 600), v1.getColor());
-        imageBuffer.setElement((int) (v2.getX() * 800), (int) (v2.getY() * 600), v2.getColor());
-        imageBuffer.setElement((int) (v3.getX() * 800), (int) (v3.getY() * 600), v3.getColor());
+     //   imageBuffer.setElement((int) (v1.getX() * 800), (int) (v1.getY() * 600), v1.getColor());
+      //  imageBuffer.setElement((int) (v2.getX() * 800), (int) (v2.getY() * 600), v2.getColor());
+      //  imageBuffer.setElement((int) (v3.getX() * 800), (int) (v3.getY() * 600), v3.getColor());
 
-int xd = (int) (v1.getX()*800);
 
+/*
         Graphics g = imageBuffer.getGraphics();
         g.setColor(new Color(1000));
       //  g.drawLine((int) v1.getX()*800, (int) v1.getY()*600, (int) v2.getX()*800, (int) v2.getY()*600);
         g.drawLine((int) v3.getX()*800,  (int) v3.getY()*600, (int) (v2.getX()*800), (int)(v2.getY()*600));
         g.drawLine((int) v2.getX()*800,  (int) v2.getY()*600, (int) (v1.getX()*800), (int)(v1.getY()*600));
-        g.drawLine((int) v1.getX()*800,  (int) v1.getY()*600, (int) (v3.getX()*800), (int)(v3.getY()*600));
+        g.drawLine((int) v1.getX()*800,  (int) v1.getY()*600, (int) (v3.getX()*800), (int)(v3.getY()*600)); */
 
        // g.drawLine((int) a.getX(), (int) vecA.getY(), (int) vecC.getX(), (int) vecC.getY());
       //  g.drawLine((int) vecC.getX(), (int) vecC.getY(), (int) vecB.getX(), (int) vecB.getY());
@@ -201,11 +217,6 @@ int xd = (int) (v1.getX()*800);
         double endAB = Math.min(v2.getY(), imageBuffer.getHeight() - 1);
 
 
-        if(startAB>endAB){
-            long temp2 = startAB;
-            startAB = (long) endAB;
-            endAB = temp2;
-        }
 
         for (long y = startAB; y <= endAB; y++) {
             double s12 = (y - v1.getY()) / (v2.getY() - v1.getY());
@@ -217,6 +228,18 @@ int xd = (int) (v1.getX()*800);
             fillLine(y, v12, v13);
         }
 
+        long startBC = (long) Math.max(Math.ceil(v2.getY()), 0);
+        double endBC = Math.min(v3.getY(), imageBuffer.getHeight() - 1);
+
+        for (long y = startBC; y <= endBC; y++) {
+            double s12 = (y - v1.getY()) / (v2.getY() - v1.getY());
+            Vertex v12 = v1.mul(1 - s12).add(v2.mul(s12));
+
+            double s13 = (y - v1.getY()) / (v3.getY() - v1.getY());
+            Vertex v13 = v1.mul(1 - s13).add(v3.mul(s13));
+
+            fillLine(y, v12, v13);
+        }
         // B => C
         // TODO
     }
@@ -256,17 +279,17 @@ int xd = (int) (v1.getX()*800);
 
     @Override
     public void setModel(Mat4 model) {
-
+        this.model = model;
     }
 
     @Override
     public void setView(Mat4 view) {
-
+this.view = view;
     }
 
     @Override
     public void setProjection(Mat4 projection) {
-
+        this.projection = projection;
     }
 
     @Override
